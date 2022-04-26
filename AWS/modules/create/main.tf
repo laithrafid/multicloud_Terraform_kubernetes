@@ -44,6 +44,7 @@ resource "aws_iam_user_policy_attachment" "kops_usr_pol_7" {
 
 resource "aws_s3_bucket" "kops_config_bucket" {
   bucket = var.kops_state
+  force_destroy = true
   tags = {
     name = "kops Cluster Configuration Bucket"
   }
@@ -52,6 +53,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "kops_config_bucke
   bucket = aws_s3_bucket.kops_config_bucket.id
   rule {
     apply_server_side_encryption_by_default {
+
       sse_algorithm = "AES256"
     }
   }
