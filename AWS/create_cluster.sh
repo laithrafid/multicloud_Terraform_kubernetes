@@ -47,6 +47,7 @@ cat << EOF > "$1".tfvars
     stage="${STAGE}"
     region="${REGION}"
     kops_state="${KOPS_STATE_S3}"
+    dns="$DNS_ZONE"
 EOF
 cd ../../
 }
@@ -69,6 +70,8 @@ cat << EOF > ../cluster/"$1".tfvars
     stage="${STAGE}"
     region="${REGION}"
     kops_state="${KOPS_STATE_S3}"
+    dns="$DNS_ZONE"
+    nameservers=$(terraform output -json | jq ".name_servers.value")
 EOF
 cd ../../
 }
@@ -95,6 +98,8 @@ create_terraform_manifest(){
   --networking calico --ssh-public-key=${PUBKEY} \
   --bastion --authorization RBAC --out=cluster --target=terraform ${CLUSTER_NAME}
   mv cluster/* . && rm -rf cluster/
+  awk '/terraform/,/^}/{next}1' kubernetes.tf > kubernetes0.tf
+  awk '/provider/,/^}/{next}1' kubernetes0.tf > kubernetes.tf
   cd ../../
   echo -e "${GREEN}==== Done Creating Cluster Terraform ====${NC}"
   echo ''

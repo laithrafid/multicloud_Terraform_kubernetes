@@ -100,10 +100,10 @@ $ aws route53 change-resource-record-sets \
 
 Now traffic to `*.subdomain.example.com` will be routed to the correct subdomain hosted zone in Route53.
 
-### Scenario 2: Setting up Route53 for a domain purchased with another registrar¶
+### Scenario 2: Setting up Route53 for a domain purchased with another registrar
 If you bought your domain elsewhere, and would like to dedicate the entire domain to AWS you should follow the guide [here](http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html)
 
-Scenario 3: Subdomain for clusters in route53, leaving the domain at another registrar¶
+Scenario 3: Subdomain for clusters in route53, leaving the domain at another registrar
 If you bought your domain elsewhere, but only want to use a subdomain in AWS Route53 you must modify your registrar's NS (NameServer) records. We'll create a hosted zone in Route53, and then migrate the subdomain's NS records to your other registrar.
 
 You might need to grab jq for some of these instructions.
@@ -118,7 +118,7 @@ Information on adding NS records with Godaddy.com
 
 Information on adding NS records with Google Cloud Platform
 
-* Using Public/Private DNS (kOps 1.5+)¶
+* Using Public/Private DNS (kOps 1.5+)
 By default the assumption is that NS records are publicly available. If you require private DNS records you should modify the commands we run later in this guide to include:
 
 `kops create cluster --dns private $NAME`

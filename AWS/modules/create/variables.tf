@@ -23,3 +23,7 @@ variable "kops_state" {
   description = "bucket where kops state files will be saved"
   default = "kopsdev-state"
 }
+variable "dns" {
+  type = string
+  description = "dns domain for this project"
+}
