@@ -1,29 +1,29 @@
 variable "access_key_id" {
-  type = string 
+  type        = string
   description = "Access Key ID of your aws account"
-  sensitive = true 
+  sensitive   = true
 }
 variable "secret_access_key" {
-  type = string
+  type        = string
   description = "Secret Access Key of your aws account"
-  sensitive = true
+  sensitive   = true
 }
 variable "stage" {
-  type = string
+  type        = string
   description = "which stage is this cluster should run vaiables from var file .tfvars"
-  default = "dev"
+  default     = "dev"
 }
 variable "region" {
-  type = string
+  type        = string
   description = "region of cluster"
-  default = "ca-central-1"
+  default     = "ca-central-1"
 }
 variable "kops_state" {
-  type = string
+  type        = string
   description = "bucket where kops state files will be saved"
-  default = "kopsdev-state"
+  default     = "kopsdev-state"
 }
 variable "dns" {
-  type = string
+  type        = string
   description = "dns domain for this project"
 }

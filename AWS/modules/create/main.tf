@@ -1,8 +1,8 @@
-resource "aws_iam_user" "kops" {
-  name = "kops${var.stage}"
-}
 resource "aws_route53_zone" "dns_zone" {
   name = var.dns
+}
+resource "aws_iam_user" "kops" {
+  name = "kops${var.stage}"
 }
 resource "aws_iam_access_key" "kops" {
   user = aws_iam_user.kops.name
@@ -44,26 +44,29 @@ resource "aws_iam_user_policy_attachment" "kops_usr_pol_7" {
 
 resource "aws_s3_bucket" "kops_config_bucket" {
   bucket = var.kops_state
-  acl    = "private"
-
-  versioning {
-    enabled = true
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
   tags = {
     name = "kops Cluster Configuration Bucket"
   }
 }
-
-resource "aws_s3_bucket_policy" "b" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "kops_config_bucket" {
+  bucket = aws_s3_bucket.kops_config_bucket.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+resource "aws_s3_bucket_acl" "kops_config_bucket" {
+  bucket = aws_s3_bucket.kops_config_bucket.id
+  acl    = "private"
+}
+resource "aws_s3_bucket_versioning" "kops_config_bucket" {
+  bucket = aws_s3_bucket.kops_config_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+resource "aws_s3_bucket_policy" "kops_config_bucket" {
   bucket = aws_s3_bucket.kops_config_bucket.id
 
   policy = <<POLICY
