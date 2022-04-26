@@ -125,6 +125,7 @@ clean_up(){
   echo -e "${RED}==== Destroying Pre-requisite Terraform Cluster ====${NC}"
   terraform destroy -auto-approve --var-file="$2".tfvars
   rm -rf "$2".tfvars .terraform* ${SSH_NAME}.pem
+  aws ec2 delete-key-pair --key-name "${SSH_NAME}"
   cd ../../
   echo -e "${YELLOW}==== Done Destroying Pre-requisite Terraform Cluster ====${NC}"
 }
