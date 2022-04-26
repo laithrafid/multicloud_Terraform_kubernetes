@@ -98,8 +98,10 @@ create_terraform_manifest(){
   --networking calico --ssh-public-key=${PUBKEY} \
   --bastion --authorization RBAC --out=cluster --target=terraform ${CLUSTER_NAME}
   mv cluster/* . && rm -rf cluster/
-  awk '/terraform/,/^}/{next}1' kubernetes.tf > kubernetes0.tf
-  awk '/provider/,/^}/{next}1' kubernetes0.tf > kubernetes.tf
+  cat kubernetes.tf | awk '/terraform/,/^}/{next}1' > kubernetes-terraform.tf
+  cat kubernetes-terraform.tf | awk '/provider/,/^}/{next}1' > kubernetes-providerless.tf
+  rm -rf kubernetes.tf kubernetes-terraform.tf 
+  mv kubernetes-providerless.tf kubernetes.tf
   cd ../../
   echo -e "${GREEN}==== Done Creating Cluster Terraform ====${NC}"
   echo ''

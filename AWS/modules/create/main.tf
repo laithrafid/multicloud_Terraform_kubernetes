@@ -2,7 +2,7 @@ resource "aws_iam_user" "kops" {
   name = "kops${var.stage}"
 }
 resource "aws_route53_zone" "dns_zone" {
-  name = "var.dns"
+  name = var.dns
 }
 resource "aws_iam_access_key" "kops" {
   user = aws_iam_user.kops.name
