@@ -1,7 +1,4 @@
 #!/bin/bash
-#TODO: 
-# 1. delete provider and terraform from generated kubernetes.tf
-# 2. fix documentation
 #### COLORS
 RED='\033[0;31m' 
 GREEN='\033[0;32m'
@@ -28,7 +25,7 @@ UPURPLE='\033[4;35m'
 UCYAN='\033[4;36m'
 UWHITE='\033[4;37m'
 ## VARS AND CONST
-DNS_ZONE=kops.bayt.cloud
+DNS_ZONE=kops.yeahstah.com
 REGION=$(aws configure get region)
 CLUSTER_NAME="api.${DNS_ZONE}"
 SSH_NAME="kops-${STAGE}ssh"
@@ -87,25 +84,58 @@ create_ssh_key(){
   echo -e "${GREEN}==== Done Creating Keypair ====${NC}"
   echo ''
 }
-create_terraform_manifest(){
+create_terraform_manifest()(
   echo -e "${BLUE}==== Creating Cluster Terraform ====${NC}"
   cd modules/cluster/
-  kops create cluster --cloud aws --state=s3://${KOPS_STATE_S3} --node-count 3 \
-  --zones ${REGION}a,${REGION}b,${REGION}d \
-  --master-zones ${REGION}a,${REGION}b,${REGION}d \
-  --dns-zone ${DNS_ZONE} --node-size t3.medium \
-  --master-size t3.medium --topology private \
-  --networking calico --ssh-public-key=${PUBKEY} \
-  --bastion --authorization RBAC --out=cluster --target=terraform ${CLUSTER_NAME}
+  if [ ! -d data/ ]; then 
+    echo -e "${BLUE}==== running kops cluster creation ====${NC}"
+    kops create cluster --cloud aws --state=s3://${KOPS_STATE_S3} --node-count 3 \
+    --zones ${REGION}a,${REGION}b,${REGION}d \
+    --master-zones ${REGION}a,${REGION}b,${REGION}d \
+    --dns-zone ${DNS_ZONE} --node-size t3.medium \
+    --master-size t3.medium --topology private \
+    --networking calico --ssh-public-key=${PUBKEY} \
+    --bastion --authorization RBAC --out=cluster --target=terraform ${CLUSTER_NAME} 
+  else 
+    echo -e "${BLUE}==== running kops cluster updating ====${NC}"
+    kops update cluster ${CLUSTER_NAME} --yes --state=s3://${KOPS_STATE_S3}
+  fi 
   mv cluster/* . && rm -rf cluster/
-  cat kubernetes.tf | awk '/terraform/,/^}/{next}1' > kubernetes-terraform.tf
-  cat kubernetes-terraform.tf | awk '/provider/,/^}/{next}1' > kubernetes-providerless.tf
-  rm -rf kubernetes.tf kubernetes-terraform.tf 
-  mv kubernetes-providerless.tf kubernetes.tf
+  while true; do
+    if [ ! -f kubernetes.tf ]; then
+      echo -e "${RED} ====kubernetes.tf doesn't exist. Sleeping for 6 seconds... till it get created ${NC}"
+      sleep 6
+    else
+      echo -e "${GREEN} ====kubernetes.tf exists. complete, starting Stage 2... ${NC}"
+      cat kubernetes.tf | awk '/terraform/,/^}/{next}1' > kubernetes-terraform.tf
+      break
+    fi
+  done
+  while true; do
+    if [ ! -f kubernetes-terraform.tf ]; then
+      echo -e "${RED} ====kubernetes-terraform.tf doesn't exist. Sleeping for 6 seconds... till it get created ${NC}"
+      sleep 6
+    else
+      echo -e "${GREEN} ====kubernetes-terraform.tf exists. Stage 2 complete, starting Stage 3... ${NC}"
+      cat kubernetes-terraform.tf | awk '/provider/,/^}/{next}1' > kubernetes-providerless.tf
+      break
+    fi
+  done
+  while true; do
+    if [ ! -f kubernetes-providerless.tf ]; then
+      echo -e "${RED} ====kubernetes-providerless.tf doesn't exist. Sleeping for 6 seconds... till it get created ${NC}"
+      sleep 6
+    else
+      echo -e "${GREEN} ====kubernetes-providerless.tf exists. Stage 3 complete, starting Stage 4... ${NC}"
+      rm -rf kubernetes.tf kubernetes-terraform.tf 
+      mv kubernetes-providerless.tf kubernetes.tf
+      break
+    fi
+  done
   cd ../../
   echo -e "${GREEN}==== Done Creating Cluster Terraform ====${NC}"
   echo ''
-}
+)
 deploying_cluster_to_aws(){
   echo -e "${BLUE}==== Deploying Cluster Terraform ====${NC}"
   cd modules/cluster/
